@@ -52,8 +52,8 @@ def Peak_Signal_to_Noise_Rate(tensorA, tensorB, PIXEL_MAX):
   '''
   assert isinstance(tensorA, torch.Tensor) and isinstance(tensorB, torch.Tensor)
   assert tensorA.dim() == 4 and tensorB.dim() == 4
-  tensorA_copy = tensorA.view(tensorA.size(0), -1)
-  tensorB_copy = tensorB.view(tensorB.size(0), -1)
+  tensorA_copy = tensorA.reshape(tensorA.size(0), -1)
+  tensorB_copy = tensorB.reshape(tensorB.size(0), -1)
   mse = torch.pow(tensorA_copy - tensorB_copy, 2).mean(dim=1)
   psnr = 20 * torch.log10(PIXEL_MAX / torch.sqrt(mse))
   return torch.mean(psnr)
@@ -68,8 +68,8 @@ def Cosine_Similarity(tensorA, tensorB):
   '''
   assert isinstance(tensorA, torch.Tensor) and isinstance(tensorB, torch.Tensor)
   assert tensorA.dim() == 4 and tensorB.dim() == 4
-  tensorA_copy = tensorA.view(tensorA.size(0), -1)
-  tensorB_copy = tensorB.view(tensorB.size(0), -1)
+  tensorA_copy = tensorA.reshape(tensorA.size(0), -1)
+  tensorB_copy = tensorB.reshape(tensorB.size(0), -1)
 
   cosineV = torch.mean(F.cosine_similarity(tensorA_copy, tensorB_copy))
   return cosineV
