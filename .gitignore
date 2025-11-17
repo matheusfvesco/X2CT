@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+*.h5
+*.pth
+*.mha
+*.png
+*tfevents*
+*.html
