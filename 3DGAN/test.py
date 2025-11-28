@@ -288,12 +288,28 @@ def evaluate(args):
             else:
                 avg_dict[key].extend(value.tolist())
 
-        # Save generated and ground-truth CT for this sample as an .h5 file
+        # Save generated and ground-truth CT, and input xrays for this sample as an .h5 file
         try:
             # generate_CT_transpose and real_CT_transpose are in NDHW format (batch, depth, height, width)
             # take the first (and only) batch element and ensure dtype is float32
             save_fake = generate_CT_transpose[0].astype(np.float32)
             save_gt = real_CT_transpose[0].astype(np.float32)
+
+            # Get input xrays from visuals (assume keys 'xray1' and 'xray2' exist)
+            # If not, fallback to 'xray' or print warning
+            xray1 = None
+            xray2 = None
+            if "xray1" in visuals:
+                xray1 = (
+                    visuals["xray1"].data.clone().cpu().numpy()[0].astype(np.float32)
+                )
+            if "xray2" in visuals:
+                xray2 = (
+                    visuals["xray2"].data.clone().cpu().numpy()[0].astype(np.float32)
+                )
+            # fallback for single xray
+            if xray1 is None and "xray" in visuals:
+                xray1 = visuals["xray"].data.clone().cpu().numpy()[0].astype(np.float32)
 
             # build output path: outputs/results/<model_name>/<data>/<tag>/
             out_dir = (
@@ -306,10 +322,14 @@ def evaluate(args):
             out_dir.mkdir(parents=True, exist_ok=True)
             out_path = out_dir / (name + ".h5")
 
-            # write both arrays into a single h5 file
+            # write arrays into a single h5 file
             with h5py.File(str(out_path), "w") as hf:
                 hf.create_dataset("fake", data=save_fake, compression="gzip")
                 hf.create_dataset("gt", data=save_gt, compression="gzip")
+                if xray1 is not None:
+                    hf.create_dataset("xray1", data=xray1, compression="gzip")
+                if xray2 is not None:
+                    hf.create_dataset("xray2", data=xray2, compression="gzip")
         except Exception as e:
             print("Failed to save h5 for {}: {}".format(name, e))
 
